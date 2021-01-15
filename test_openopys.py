@@ -1,10 +1,37 @@
+import re
+
 import pytest
 from delayed_assert import expect, assert_expectations
 
 from src.openopys import OpenOpys, _urljoin
 
+# API URLs
 default_api_url = 'https://api.openopus.org'
 custom_api_url = 'https://api.openopus.org'
+
+# Response Schemas
+composer_list_schema = {
+    'id': [str],
+    'name': [str],
+    'complete_name': [str],
+    'birth': [str],
+    'death': [str, type(None)],
+    'epoch': [str],
+    'portrait': [str],
+}
+
+work_list_schema = {}
+
+genre_list_schema = {}
+
+
+def _validate_result_with_schema(result, response_schema):
+    for item in result:
+        for key, expected_types in response_schema.items():
+            expect(
+                key in item and type(item.get(key)) in expected_types,
+                f"expected_type={expected_types}, observed_type={type(item.get(key))}"
+            )
 
 
 def default_openopys():
@@ -40,48 +67,48 @@ def test_create_openopys(openopys_constructor, setting, expected_attr_dict):
     (
         [
             'http://website.net'
-        ], 
+        ],
         'http://website.net'
     ),
-    ( 
+    (
         [
             'http://website.net/'
-        ], 
+        ],
         'http://website.net/'
     ),
     (
         [
             'http://website.net',
             'app'
-        ], 
+        ],
         'http://website.net/app'
     ),
     (
         [
             'http://website.net/',
             'app'
-        ], 
+        ],
         'http://website.net/app'
     ),
     (
         [
             'http://website.net',
             '/app'
-        ], 
+        ],
         'http://website.net/app'
     ),
     (
         [
             'http://website.net/',
             '/app'
-        ], 
+        ],
         'http://website.net/app'
     ),
     (
         [
             'http://website.net',
             'app/'
-        ], 
+        ],
         'http://website.net/app/'
     ),
     (
@@ -89,7 +116,7 @@ def test_create_openopys(openopys_constructor, setting, expected_attr_dict):
             'http://website.net',
             'app',
             'sub'
-        ], 
+        ],
         'http://website.net/app/sub'
     ),
 ])
@@ -98,3 +125,91 @@ def test_url_join(path_snippets, expected):
     assert joined == expected, f"Expected='{expected}', Observed='{joined}'"
 
 
+@pytest.mark.parametrize('openopys_constructor, setting, response_schema', [
+    (default_openopys, 'defualt', composer_list_schema),
+    (custom_url_openopys, 'custom', composer_list_schema)
+])
+def test_list_popular_composers(openopys_constructor, setting, response_schema):
+    openopys = openopys_constructor()
+    result = openopys.list_popular_composers()
+    _validate_result_with_schema(result, response_schema)
+    assert_expectations()
+
+
+@pytest.mark.parametrize('openopys_constructor, setting, response_schema', [
+    (default_openopys, 'defualt', composer_list_schema),
+    (custom_url_openopys, 'custom', composer_list_schema)
+])
+def test_list_essential_composers(openopys_constructor, setting, response_schema):
+    openopys = openopys_constructor()
+    result = openopys.list_essential_composers()
+    _validate_result_with_schema(result, response_schema)
+    assert_expectations()
+
+
+@pytest.mark.parametrize('openopys_constructor, letter, response_schema', [
+    (default_openopys, 'a', composer_list_schema),
+    (custom_url_openopys, 'a', composer_list_schema),
+    (default_openopys, 'R', composer_list_schema),
+    (default_openopys, 'b', composer_list_schema),
+    (default_openopys, 'X', composer_list_schema),
+    (default_openopys, '!', composer_list_schema),
+])
+def test_list_composers_by_first_letter(openopys_constructor, letter, response_schema):
+    openopys = openopys_constructor()
+    result = openopys.list_composers_by_first_letter(letter)
+    _validate_result_with_schema(result, response_schema)
+
+    # Also check that every result starts with expected letter
+    for item in result:
+        expect(
+            item['name'][0] in [letter.upper(), letter.lower()],
+            f"Name='{item['name']}' | StartsWith='{item['name'][0]}', Expected='{letter}'"
+        )
+
+    assert_expectations()
+
+
+@pytest.mark.parametrize('openopys_constructor, period, response_schema', [
+    (default_openopys, 'Baroque', composer_list_schema),
+    (custom_url_openopys, 'Baroque', composer_list_schema),
+    (default_openopys, 'Medieval', composer_list_schema),
+    (default_openopys, 'Renaissance', composer_list_schema),
+    (default_openopys, 'Classical', composer_list_schema),
+    (default_openopys, 'Romantic', composer_list_schema),
+    (default_openopys, 'Punk', composer_list_schema)
+])
+def test_list_composers_by_period(openopys_constructor, period, response_schema):
+    openopys = openopys_constructor()
+    result = openopys.list_composers_by_period(period)
+    _validate_result_with_schema(result, response_schema)
+
+    # Also check that every composer belongs to the specified period
+    for item in result:
+        expect(
+            item['epoch'] == period,
+            f"Name='{item['name']}' | Observed Epoch='{item['epoch']}', Expected Epoch='{period}'"
+        )
+
+    assert_expectations()
+
+
+@pytest.mark.parametrize('openopys_constructor, search_str, response_schema', [
+    (default_openopys, 'Rameau', composer_list_schema),
+    (custom_url_openopys, 'Rameau', composer_list_schema),
+    (default_openopys, 'rameau', composer_list_schema),
+    (default_openopys, 'ach', composer_list_schema),
+    (default_openopys, '#!@#$', composer_list_schema)
+])
+def test_search_composers_by_name(openopys_constructor, search_str, response_schema):
+    openopys = openopys_constructor()
+    result = openopys.search_composers_by_name(search_str)
+    _validate_result_with_schema(result, response_schema)
+    # Also check that every result contains the search string
+    for item in result:
+        expect(
+            re.search(search_str, item['name'], re.IGNORECASE) is not None,
+            f"Name='{item['name']}' | Could not find search_str='{search_str}'"
+        )
+
+    assert_expectations()

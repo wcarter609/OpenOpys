@@ -9,6 +9,7 @@ def _urljoin(*args):
     trailing_slash = '/' if args[-1].endswith('/') else ''
     return "/".join(map(lambda x: str(x).strip('/'), args)) + trailing_slash
 
+
 class DataType(str, Enum):
     COMPOSERS = 'composers'
     WORKS = 'works'
@@ -32,7 +33,6 @@ class ResponseContentTypeError(Exception):
     def __init__(self, observed, expected, *args, **kwargs):
         Exception.__init__(
             self, f"Response content is of type '{observed}'. Must be '{expected}'")
-
 
 
 class OpenOpys(Session):
@@ -84,27 +84,27 @@ class OpenOpys(Session):
         """
         joined_items = self._join_items(items)
         target = _urljoin(
-            self.api_url, self.data_base_urls['composer'], 'list', list_by, joined_items) + '.json'
+            self.api_url, self.data_base_urls[DataType.COMPOSERS], 'list', list_by, joined_items) + '.json'
         return self.get_json(target).get('composers', [])
 
     def _list_works(self, list_by='', items=[]):
         joined_items = self._join_items(items)
         target = _urljoin(
-            self.api_url, self.data_base_urls['work'], 'list', list_by, joined_items) + '.json'
+            self.api_url, self.data_base_urls[DataType.WORKS], 'list', list_by, joined_items) + '.json'
         return self.get_json(target).get('works', [])
 
     def _list_genres(self, list_by='', items=[]):
         joined_items = self._join_items(items)
         target = _urljoin(
-            self.api_url, self.data_base_urls['genre'], 'list', list_by, joined_items) + '.json'
+            self.api_url, self.data_base_urls[DataType.GENRES], 'list', list_by, joined_items) + '.json'
         return self.get_json(target).get('genres', [])
 
     def list_popular_composers(self):
-        items = 'pop'
+        items = ['pop']
         return self._list_composers(items=items)
 
     def list_essential_composers(self):
-        items = 'rec'
+        items = ['rec']
         return self._list_composers(items=items)
 
     def list_composers_by_first_letter(self, letter):
