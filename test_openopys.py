@@ -199,7 +199,8 @@ def test_list_composers_by_period(openopys_constructor, period, response_schema)
     (custom_url_openopys, 'Rameau', composer_list_schema),
     (default_openopys, 'rameau', composer_list_schema),
     (default_openopys, 'ach', composer_list_schema),
-    (default_openopys, '#!@#$', composer_list_schema)
+    (default_openopys, '', composer_list_schema),
+    # (default_openopys, '#!@#$', composer_list_schema),
 ])
 def test_search_composers_by_name(openopys_constructor, search_str, response_schema):
     openopys = openopys_constructor()
@@ -210,6 +211,29 @@ def test_search_composers_by_name(openopys_constructor, search_str, response_sch
         expect(
             re.search(search_str, item['name'], re.IGNORECASE) is not None,
             f"Name='{item['name']}' | Could not find search_str='{search_str}'"
+        )
+
+    assert_expectations()
+
+
+@pytest.mark.parametrize('openopys_constructor, ids, response_schema', [
+    (default_openopys, ['178'], composer_list_schema),
+    (custom_url_openopys, ['178'], composer_list_schema),
+    (default_openopys, ['10'], composer_list_schema),
+    (default_openopys, ['178', '10'], composer_list_schema),
+    (default_openopys, ['178', '10', '204'], composer_list_schema),
+    (default_openopys, ['-1'], composer_list_schema),
+    (default_openopys, ['178', '10', '204', '-1'], composer_list_schema),
+])
+def test_list_composers_by_id(openopys_constructor, ids, response_schema):
+    openopys = openopys_constructor()
+    result = openopys.list_composers_by_id(ids)
+    _validate_result_with_schema(result, response_schema)
+    # Also check that every result is a composer in provided ids
+    for item in result:
+        expect(
+            item['id'] in ids,
+            f"Composer '{item['name']}' has id='{item['id']}' not in provided ids {ids}"
         )
 
     assert_expectations()
