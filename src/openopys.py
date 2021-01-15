@@ -1,6 +1,7 @@
 from enum import Enum, auto
 from json.decoder import JSONDecodeError
 
+from urllib.parse import quote
 from requests import Session
 from requests.models import ContentDecodingError
 
@@ -57,7 +58,14 @@ class OpenOpys(Session):
 
         """
         expected_type = 'application/json'
-        response = self.get(url, **kwargs)
+        
+        # use quote to handle converting any troublesome chars
+        # don't need to be more specific since the OpenOpus API doesn't make use of params
+        split_url = url.split('://')
+        escaped_content = quote('://'.join(split_url[1:]))
+        escaped_url = '://'.join([split_url[0], escaped_content])
+
+        response = self.get(escaped_url, **kwargs) 
 
         observed_type = response.headers.get('content-type')
         if observed_type != expected_type:
@@ -75,8 +83,6 @@ class OpenOpys(Session):
         joined_items = self._join_items(items)
         target = _urljoin(
             self.api_url, self.data_base_urls[data_type], 'list', list_by, joined_items) + '.json'
-        print(target)
-        print(data_type.value)
         return self.get_json(target).get(data_type.value, [])
 
     def _list_composers(self, list_by='', items=[]):
