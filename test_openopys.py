@@ -3,7 +3,7 @@ import re
 import pytest
 from delayed_assert import expect, assert_expectations
 
-from src.openopys import OpenOpys, _urljoin
+from src.openopys import OpenOpys, Genre, _urljoin
 
 # API URLs
 default_api_url = 'https://api.openopus.org'
@@ -20,17 +20,31 @@ composer_list_schema = {
     'portrait': [str],
 }
 
-work_list_schema = {}
+work_list_schema = {
+    'title': [str],
+    'subtitle': [str],
+    'searchterms': [str],
+    'popular': [str],
+    'recommended': [str],
+    'id': [str],
+    'genre': [str]
+}
 
-genre_list_schema = {}
+genre_list_schema = str
 
 
 def _validate_result_with_schema(result, response_schema):
     for item in result:
-        for key, expected_types in response_schema.items():
+        if type(response_schema) == dict:
+            for key, expected_types in response_schema.items():
+                expect(
+                    key in item and type(item.get(key)) in expected_types,
+                    f"expected_type={expected_types}, observed_type={type(item.get(key))}"
+                )
+        else:
             expect(
-                key in item and type(item.get(key)) in expected_types,
-                f"expected_type={expected_types}, observed_type={type(item.get(key))}"
+                type(item) == response_schema,
+                f"expected_type={response_schema}, observed_type={type(item)}"
             )
 
 
@@ -236,4 +250,50 @@ def test_list_composers_by_id(openopys_constructor, ids, response_schema):
             f"Composer '{item['name']}' has id='{item['id']}' not in provided ids {ids}"
         )
 
+    assert_expectations()
+
+
+@pytest.mark.parametrize('openopys_constructor, composer_id, response_schema', [
+    (default_openopys, '178', genre_list_schema),
+    (custom_url_openopys, '178', genre_list_schema),
+    (default_openopys, '10', genre_list_schema),
+    (default_openopys, '204', genre_list_schema),
+    (default_openopys, '-1', genre_list_schema),
+])
+def test_list_genres_by_composer_id(openopys_constructor, composer_id, response_schema):
+    openopys = openopys_constructor()
+    result = openopys.list_genres_by_composer_id(composer_id)
+    _validate_result_with_schema(result, response_schema)
+    assert_expectations()
+
+@pytest.mark.parametrize('openopys_constructor, composer_id, genre, response_schema', [
+    (default_openopys, '178', 'Stage', work_list_schema),
+    (custom_url_openopys, '178', 'Stage', work_list_schema),
+    (default_openopys, '178', Genre.STAGE, work_list_schema),
+    (default_openopys, '204', Genre.POPULAR, work_list_schema),
+    (default_openopys, '-1', Genre.STAGE, work_list_schema),
+])    
+def test_list_works_by_composer_id_and_genre(openopys_constructor, composer_id, genre, response_schema):
+    openopys = openopys_constructor()
+    result = openopys.list_works_by_composer_id_and_genre(composer_id, genre)
+    _validate_result_with_schema(result, response_schema)
+    # Also check that every result belongs to specified genre
+    for item in result:
+        expect(
+            item['genre'] == genre,
+            f"'{item['title']}' has genre='{item['genre']}' not expected_genre={genre}"
+        )
+    assert_expectations()
+
+@pytest.mark.parametrize('openopys_constructor, composer_id, response_schema', [
+    (default_openopys, '178', work_list_schema),
+    (custom_url_openopys, '178', work_list_schema),
+    (default_openopys, '10', work_list_schema),
+    (default_openopys, '204', work_list_schema),
+    (default_openopys, '-1', work_list_schema),
+])
+def test_list_works_by_composer_id(openopys_constructor, composer_id, response_schema):
+    openopys = openopys_constructor()
+    result = openopys.list_works_by_composer_id(composer_id)
+    _validate_result_with_schema(result, response_schema)
     assert_expectations()
