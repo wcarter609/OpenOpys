@@ -297,3 +297,63 @@ def test_list_works_by_composer_id(openopys_constructor, composer_id, response_s
     result = openopys.list_works_by_composer_id(composer_id)
     _validate_result_with_schema(result, response_schema)
     assert_expectations()
+
+
+@pytest.mark.parametrize('openopys_constructor, composer_id, response_schema', [
+    (default_openopys, '178', work_list_schema),
+    (custom_url_openopys, '178', work_list_schema),
+    (default_openopys, '10', work_list_schema),
+    (default_openopys, '204', work_list_schema),
+    (default_openopys, '-1', work_list_schema),
+])
+def test_list_popular_works_by_composer_id(openopys_constructor, composer_id, response_schema):
+    openopys = openopys_constructor()
+    result = openopys.list_popular_works_by_composer_id(composer_id)
+    _validate_result_with_schema(result, response_schema)
+    # Also check that every result is popular
+    for item in result:
+        expect(
+            item['genre'] == Genre.POPULAR,
+            f"'{item['title']}' has genre='{item['genre']}' not expected_genre={Genre.POPULAR}"
+        )
+    assert_expectations()
+
+
+@pytest.mark.parametrize('openopys_constructor, composer_id, response_schema', [
+    (default_openopys, '178', work_list_schema),
+    (custom_url_openopys, '178', work_list_schema),
+    (default_openopys, '10', work_list_schema),
+    (default_openopys, '204', work_list_schema),
+    (default_openopys, '-1', work_list_schema),
+])
+def test_list_essential_works_by_composer_id(openopys_constructor, composer_id, response_schema):
+    openopys = openopys_constructor()
+    result = openopys.list_popular_works_by_composer_id(composer_id)
+    _validate_result_with_schema(result, response_schema)
+    # Also check that every result is popular
+    for item in result:
+        expect(
+            item['genre'] == Genre.ESSENTIAL,
+            f"'{item['title']}' has genre='{item['genre']}' not expected_genre={Genre.POPULAR}"
+        )
+    assert_expectations()
+
+
+@pytest.mark.parametrize('openopys_constructor, composer_id, title_search, genre, response_schema', [
+    (default_openopys, '178', 'Dard', Genre.STAGE, work_list_schema),
+    (custom_url_openopys, '178', 'Hip', Genre.STAGE, work_list_schema),
+    (default_openopys, '10', 'De', Genre.VOCAL, work_list_schema),
+    (default_openopys, '204', 'Viol', Genre.CHAMBER, work_list_schema),
+    (default_openopys, '-1', '', Genre.POPULAR, work_list_schema),
+])
+def test_search_works_by_composer_id_title_and_genre(openopys_constructor, composer_id, title_search, genre, response_schema):
+    openopys = openopys_constructor()
+    result = openopys.search_works_by_composer_id_title_and_genre(composer_id, title_search, genre)
+    _validate_result_with_schema(result, response_schema)
+    # Also check that every result is popular
+    for item in result:
+        expect(
+            item['genre'] == genre.value,
+            f"'{item['title']}' has genre='{item['genre']}' not expected_genre={genre.value}"
+        )
+    assert_expectations()

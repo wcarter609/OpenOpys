@@ -154,6 +154,9 @@ class OpenOpys(Session):
         return self.list_works_by_composer_id_and_genre(composer_id, Genre.ESSENTIAL)
 
     def search_works_by_composer_id_title_and_genre(self, composer_id, title, genre):
+        if type(genre) == Genre:
+            genre = genre.value
+
         list_by = _urljoin('composer', composer_id, 'genre', genre, 'search')
         items = [title]
         return self._list_works(list_by=list_by, items=items)
