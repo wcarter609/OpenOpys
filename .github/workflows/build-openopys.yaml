@@ -10,4 +10,4 @@ jobs:
           python-version: '3.x'
           architecture: 'x64'
       - run: pip install -r test_requirements.txt
-      
+      - run: pytest --cov=src test_openopys.py
