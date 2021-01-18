@@ -1,7 +1,7 @@
 name: build-openopys
 on: [push]
 jobs:
-  calculate-coverage:
+  calculate-coverage-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -9,5 +9,13 @@ jobs:
         with:
           python-version: '3.x'
           architecture: 'x64'
-      - run: pip install -r test_requirements.txt
-      - run: pytest --cov=src test_openopys.py
+          
+      - name: Install testing packages
+        run: pip install -r test_requirements.txt
+
+      - name: Add plugin to annotate failures
+        run: pip install pytest-github-actions-annotate-failures
+      
+      - name: Calculate coverage
+        run: pytest --cov=src test_openopys.py
+
