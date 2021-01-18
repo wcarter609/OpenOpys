@@ -11,7 +11,7 @@ def _urljoin(*args):
     return "/".join(map(lambda x: str(x).strip('/'), args)) + trailing_slash
 
 
-class DataType(str, Enum):
+class Content(str, Enum):
     COMPOSERS = 'composers'
     WORKS = 'works'
     GENRES = 'genres'
@@ -38,11 +38,11 @@ class ResponseContentTypeError(Exception):
 
 class OpenOpys(Session):
 
-    data_base_urls = {
-        DataType.COMPOSERS: 'composer',
-        DataType.WORKS: 'work',
-        DataType.GENRES: 'genre',
-        DataType.PERFORMERS: 'performer'
+    content_base_urls = {
+        Content.COMPOSERS: 'composer',
+        Content.WORKS: 'work',
+        Content.GENRES: 'genre',
+        Content.PERFORMERS: 'performer'
     }
 
     def __init__(self, api_url='https://api.openopus.org', **kwargs):
@@ -82,7 +82,7 @@ class OpenOpys(Session):
         """
         joined_items = self._join_items(items)
         target = _urljoin(
-            self.api_url, self.data_base_urls[data_type], 'list', list_by, joined_items) + '.json'
+            self.api_url, self.content_base_urls[data_type], 'list', list_by, joined_items) + '.json'
         return self.get_json(target).get(data_type.value, [])
 
     def _list_composers(self, list_by='', items=[]):
@@ -90,19 +90,19 @@ class OpenOpys(Session):
         """
         joined_items = self._join_items(items)
         target = _urljoin(
-            self.api_url, self.data_base_urls[DataType.COMPOSERS], 'list', list_by, joined_items) + '.json'
+            self.api_url, self.content_base_urls[Content.COMPOSERS], 'list', list_by, joined_items) + '.json'
         return self.get_json(target).get('composers', [])
 
     def _list_works(self, list_by='', items=[]):
         joined_items = self._join_items(items)
         target = _urljoin(
-            self.api_url, self.data_base_urls[DataType.WORKS], 'list', list_by, joined_items) + '.json'
+            self.api_url, self.content_base_urls[Content.WORKS], 'list', list_by, joined_items) + '.json'
         return self.get_json(target).get('works', [])
 
     def _list_genres(self, list_by='', items=[]):
         joined_items = self._join_items(items)
         target = _urljoin(
-            self.api_url, self.data_base_urls[DataType.GENRES], 'list', list_by, joined_items) + '.json'
+            self.api_url, self.content_base_urls[Content.GENRES], 'list', list_by, joined_items) + '.json'
         return self.get_json(target).get('genres', [])
 
     def list_popular_composers(self):
@@ -126,7 +126,7 @@ class OpenOpys(Session):
     def search_composers_by_name(self, name):
         list_by = 'search'
         items = [name]
-        return self._list_data(DataType.COMPOSERS, list_by=list_by, items=items)
+        return self._list_data(Content.COMPOSERS, list_by=list_by, items=items)
         # return self._list_composers(list_by=list_by, items=items)
 
     def list_composers_by_id(self, ids):

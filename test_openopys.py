@@ -48,6 +48,23 @@ def _validate_result_with_schema(result, response_schema):
             )
 
 
+def _result_size_in_range(size, min=None, max=None):
+    if min is None and max is None:
+        return True
+
+    elif min is None and max is not None:
+        return size <= max
+
+    elif min is not None and max is None:
+        return size >= min
+
+    elif min is not None and max is not None:
+        return size >= min and size <= max
+
+    else:
+        return False
+
+
 def default_openopys():
     return OpenOpys()
 
@@ -139,39 +156,55 @@ def test_url_join(path_snippets, expected):
     assert joined == expected, f"Expected='{expected}', Observed='{joined}'"
 
 
-@pytest.mark.parametrize('openopys_constructor, setting, response_schema', [
-    (default_openopys, 'defualt', composer_list_schema),
-    (custom_url_openopys, 'custom', composer_list_schema)
+@pytest.mark.parametrize('openopys_constructor, setting, response_schema, min_num_results, max_num_results', [
+    (default_openopys, 'defualt', composer_list_schema, 1, None),
+    (custom_url_openopys, 'custom', composer_list_schema, 1, None)
 ])
-def test_list_popular_composers(openopys_constructor, setting, response_schema):
+def test_list_popular_composers(openopys_constructor, setting, response_schema, min_num_results, max_num_results):
     openopys = openopys_constructor()
     result = openopys.list_popular_composers()
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
     _validate_result_with_schema(result, response_schema)
+
     assert_expectations()
 
 
-@pytest.mark.parametrize('openopys_constructor, setting, response_schema', [
-    (default_openopys, 'defualt', composer_list_schema),
-    (custom_url_openopys, 'custom', composer_list_schema)
+@pytest.mark.parametrize('openopys_constructor, setting, response_schema, min_num_results, max_num_results', [
+    (default_openopys, 'defualt', composer_list_schema, 1, None),
+    (custom_url_openopys, 'custom', composer_list_schema, 1, None)
 ])
-def test_list_essential_composers(openopys_constructor, setting, response_schema):
+def test_list_essential_composers(openopys_constructor, setting, response_schema, min_num_results, max_num_results):
     openopys = openopys_constructor()
     result = openopys.list_essential_composers()
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
     _validate_result_with_schema(result, response_schema)
     assert_expectations()
 
 
-@pytest.mark.parametrize('openopys_constructor, letter, response_schema', [
-    (default_openopys, 'a', composer_list_schema),
-    (custom_url_openopys, 'a', composer_list_schema),
-    (default_openopys, 'R', composer_list_schema),
-    (default_openopys, 'b', composer_list_schema),
-    (default_openopys, 'X', composer_list_schema),
-    (default_openopys, '!', composer_list_schema),
+@pytest.mark.parametrize('openopys_constructor, letter, response_schema, min_num_results, max_num_results', [
+    (default_openopys, 'a', composer_list_schema, 1, None),
+    (custom_url_openopys, 'a', composer_list_schema, 1, None),
+    (default_openopys, 'R', composer_list_schema, 1, None),
+    (default_openopys, 'b', composer_list_schema, 1, None),
+    (default_openopys, 'X', composer_list_schema, 1, None),
+    (default_openopys, '!', composer_list_schema, 0, 0),
 ])
-def test_list_composers_by_first_letter(openopys_constructor, letter, response_schema):
+def test_list_composers_by_first_letter(openopys_constructor, letter, response_schema, min_num_results, max_num_results):
     openopys = openopys_constructor()
     result = openopys.list_composers_by_first_letter(letter)
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
     _validate_result_with_schema(result, response_schema)
 
     # Also check that every result starts with expected letter
@@ -184,18 +217,24 @@ def test_list_composers_by_first_letter(openopys_constructor, letter, response_s
     assert_expectations()
 
 
-@pytest.mark.parametrize('openopys_constructor, period, response_schema', [
-    (default_openopys, 'Baroque', composer_list_schema),
-    (custom_url_openopys, 'Baroque', composer_list_schema),
-    (default_openopys, 'Medieval', composer_list_schema),
-    (default_openopys, 'Renaissance', composer_list_schema),
-    (default_openopys, 'Classical', composer_list_schema),
-    (default_openopys, 'Romantic', composer_list_schema),
-    (default_openopys, 'Punk', composer_list_schema)
+@pytest.mark.parametrize('openopys_constructor, period, response_schema, min_num_results, max_num_results', [
+    (default_openopys, 'Baroque', composer_list_schema, 1, None),
+    (custom_url_openopys, 'Baroque', composer_list_schema, 1, None),
+    (default_openopys, 'Medieval', composer_list_schema, 1, None),
+    (default_openopys, 'Renaissance', composer_list_schema, 1, None),
+    (default_openopys, 'Classical', composer_list_schema, 1, None),
+    (default_openopys, 'Romantic', composer_list_schema, 1, None),
+    (default_openopys, 'Punk', composer_list_schema, 0, 0)
 ])
-def test_list_composers_by_period(openopys_constructor, period, response_schema):
+def test_list_composers_by_period(openopys_constructor, period, response_schema, min_num_results, max_num_results):
     openopys = openopys_constructor()
     result = openopys.list_composers_by_period(period)
+
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
     _validate_result_with_schema(result, response_schema)
 
     # Also check that every composer belongs to the specified period
@@ -208,17 +247,23 @@ def test_list_composers_by_period(openopys_constructor, period, response_schema)
     assert_expectations()
 
 
-@pytest.mark.parametrize('openopys_constructor, search_str, response_schema', [
-    (default_openopys, 'Rameau', composer_list_schema),
-    (custom_url_openopys, 'Rameau', composer_list_schema),
-    (default_openopys, 'rameau', composer_list_schema),
-    (default_openopys, 'ach', composer_list_schema),
-    (default_openopys, '', composer_list_schema),
-    # (default_openopys, '#!@#$', composer_list_schema),
+@pytest.mark.parametrize('openopys_constructor, search_str, response_schema, min_num_results, max_num_results', [
+    (default_openopys, 'Rameau', composer_list_schema, 1, 1),
+    (custom_url_openopys, 'Rameau', composer_list_schema, 1, 1),
+    (default_openopys, 'rameau', composer_list_schema, 1, 1),
+    (default_openopys, 'ach', composer_list_schema, 1, None),
+    (default_openopys, '', composer_list_schema, 1, None),
+    (default_openopys, 'dasdasdvasv', composer_list_schema, 0, 0),
 ])
-def test_search_composers_by_name(openopys_constructor, search_str, response_schema):
+def test_search_composers_by_name(openopys_constructor, search_str, response_schema, min_num_results, max_num_results):
     openopys = openopys_constructor()
     result = openopys.search_composers_by_name(search_str)
+
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
     _validate_result_with_schema(result, response_schema)
     # Also check that every result contains the search string
     for item in result:
@@ -230,18 +275,24 @@ def test_search_composers_by_name(openopys_constructor, search_str, response_sch
     assert_expectations()
 
 
-@pytest.mark.parametrize('openopys_constructor, ids, response_schema', [
-    (default_openopys, ['178'], composer_list_schema),
-    (custom_url_openopys, ['178'], composer_list_schema),
-    (default_openopys, ['10'], composer_list_schema),
-    (default_openopys, ['178', '10'], composer_list_schema),
-    (default_openopys, ['178', '10', '204'], composer_list_schema),
-    (default_openopys, ['-1'], composer_list_schema),
-    (default_openopys, ['178', '10', '204', '-1'], composer_list_schema),
+@pytest.mark.parametrize('openopys_constructor, ids, response_schema, min_num_results, max_num_results', [
+    (default_openopys, ['178'], composer_list_schema, 1, 1),
+    (custom_url_openopys, ['178'], composer_list_schema, 1, 1),
+    (default_openopys, ['10'], composer_list_schema, 1, 1),
+    (default_openopys, ['178', '10'], composer_list_schema, 2, 2),
+    (default_openopys, ['178', '10', '204'], composer_list_schema, 3, 3),
+    (default_openopys, ['-1'], composer_list_schema, 0, 0),
+    (default_openopys, ['178', '10', '204', '-1'], composer_list_schema, 3, 3),
 ])
-def test_list_composers_by_id(openopys_constructor, ids, response_schema):
+def test_list_composers_by_id(openopys_constructor, ids, response_schema, min_num_results, max_num_results):
     openopys = openopys_constructor()
     result = openopys.list_composers_by_id(ids)
+
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
     _validate_result_with_schema(result, response_schema)
     # Also check that every result is a composer in provided ids
     for item in result:
@@ -253,30 +304,44 @@ def test_list_composers_by_id(openopys_constructor, ids, response_schema):
     assert_expectations()
 
 
-@pytest.mark.parametrize('openopys_constructor, composer_id, response_schema', [
-    (default_openopys, '178', genre_list_schema),
-    (custom_url_openopys, '178', genre_list_schema),
-    (default_openopys, '10', genre_list_schema),
-    (default_openopys, '204', genre_list_schema),
-    (default_openopys, '-1', genre_list_schema),
+@pytest.mark.parametrize('openopys_constructor, composer_id, response_schema, min_num_results, max_num_results', [
+    (default_openopys, '178', genre_list_schema, 1, None),
+    (custom_url_openopys, '178', genre_list_schema, 1, None),
+    (default_openopys, '10', genre_list_schema, 1, None),
+    (default_openopys, '204', genre_list_schema, 1, None),
+    (default_openopys, '-1', genre_list_schema, 0, 0),
 ])
-def test_list_genres_by_composer_id(openopys_constructor, composer_id, response_schema):
+def test_list_genres_by_composer_id(openopys_constructor, composer_id, response_schema, min_num_results, max_num_results):
     openopys = openopys_constructor()
     result = openopys.list_genres_by_composer_id(composer_id)
+
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
     _validate_result_with_schema(result, response_schema)
     assert_expectations()
 
-@pytest.mark.parametrize('openopys_constructor, composer_id, genre, response_schema', [
-    (default_openopys, '178', 'Stage', work_list_schema),
-    (custom_url_openopys, '178', 'Stage', work_list_schema),
-    (default_openopys, '178', Genre.STAGE, work_list_schema),
-    (default_openopys, '204', Genre.POPULAR, work_list_schema),
-    (default_openopys, '-1', Genre.STAGE, work_list_schema),
-])    
-def test_list_works_by_composer_id_and_genre(openopys_constructor, composer_id, genre, response_schema):
+
+@pytest.mark.parametrize('openopys_constructor, composer_id, genre, response_schema, min_num_results, max_num_results', [
+    (default_openopys, '178', 'Stage', work_list_schema, 1, None),
+    (custom_url_openopys, '178', 'Stage', work_list_schema, 1, None),
+    (default_openopys, '178', Genre.STAGE, work_list_schema, 1, None),
+    (default_openopys, '204', Genre.POPULAR, work_list_schema, None, None),
+    (default_openopys, '-1', Genre.STAGE, work_list_schema, 0, 0),
+])
+def test_list_works_by_composer_id_and_genre(openopys_constructor, composer_id, genre, response_schema, min_num_results, max_num_results):
     openopys = openopys_constructor()
     result = openopys.list_works_by_composer_id_and_genre(composer_id, genre)
+
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
     _validate_result_with_schema(result, response_schema)
+
     # Also check that every result belongs to specified genre
     for item in result:
         expect(
@@ -285,30 +350,43 @@ def test_list_works_by_composer_id_and_genre(openopys_constructor, composer_id, 
         )
     assert_expectations()
 
-@pytest.mark.parametrize('openopys_constructor, composer_id, response_schema', [
-    (default_openopys, '178', work_list_schema),
-    (custom_url_openopys, '178', work_list_schema),
-    (default_openopys, '10', work_list_schema),
-    (default_openopys, '204', work_list_schema),
-    (default_openopys, '-1', work_list_schema),
+
+@pytest.mark.parametrize('openopys_constructor, composer_id, response_schema, min_num_results, max_num_results', [
+    (default_openopys, '178', work_list_schema, 1, None),
+    (custom_url_openopys, '178', work_list_schema, 1, None),
+    (default_openopys, '10', work_list_schema, 1, None),
+    (default_openopys, '204', work_list_schema, 1, None),
+    (default_openopys, '-1', work_list_schema, 0, 0),
 ])
-def test_list_works_by_composer_id(openopys_constructor, composer_id, response_schema):
+def test_list_works_by_composer_id(openopys_constructor, composer_id, response_schema, min_num_results, max_num_results):
     openopys = openopys_constructor()
     result = openopys.list_works_by_composer_id(composer_id)
+
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
     _validate_result_with_schema(result, response_schema)
     assert_expectations()
 
 
-@pytest.mark.parametrize('openopys_constructor, composer_id, response_schema', [
-    (default_openopys, '178', work_list_schema),
-    (custom_url_openopys, '178', work_list_schema),
-    (default_openopys, '10', work_list_schema),
-    (default_openopys, '204', work_list_schema),
-    (default_openopys, '-1', work_list_schema),
+@pytest.mark.parametrize('openopys_constructor, composer_id, response_schema, min_num_results, max_num_results', [
+    (default_openopys, '178', work_list_schema, None, None),
+    (custom_url_openopys, '178', work_list_schema, None, None),
+    (default_openopys, '10', work_list_schema, None, None),
+    (default_openopys, '204', work_list_schema, None, None),
+    (default_openopys, '-1', work_list_schema, 0, 0),
 ])
-def test_list_popular_works_by_composer_id(openopys_constructor, composer_id, response_schema):
+def test_list_popular_works_by_composer_id(openopys_constructor, composer_id, response_schema, min_num_results, max_num_results):
     openopys = openopys_constructor()
     result = openopys.list_popular_works_by_composer_id(composer_id)
+
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
     _validate_result_with_schema(result, response_schema)
     # Also check that every result is popular
     for item in result:
@@ -319,16 +397,22 @@ def test_list_popular_works_by_composer_id(openopys_constructor, composer_id, re
     assert_expectations()
 
 
-@pytest.mark.parametrize('openopys_constructor, composer_id, response_schema', [
-    (default_openopys, '178', work_list_schema),
-    (custom_url_openopys, '178', work_list_schema),
-    (default_openopys, '10', work_list_schema),
-    (default_openopys, '204', work_list_schema),
-    (default_openopys, '-1', work_list_schema),
+@pytest.mark.parametrize('openopys_constructor, composer_id, response_schema, min_num_results, max_num_results', [
+    (default_openopys, '178', work_list_schema, None, None),
+    (custom_url_openopys, '178', work_list_schema, None, None),
+    (default_openopys, '10', work_list_schema, None, None),
+    (default_openopys, '204', work_list_schema, None, None),
+    (default_openopys, '-1', work_list_schema, 0, 0),
 ])
-def test_list_essential_works_by_composer_id(openopys_constructor, composer_id, response_schema):
+def test_list_essential_works_by_composer_id(openopys_constructor, composer_id, response_schema, min_num_results, max_num_results):
     openopys = openopys_constructor()
     result = openopys.list_popular_works_by_composer_id(composer_id)
+
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
     _validate_result_with_schema(result, response_schema)
     # Also check that every result is popular
     for item in result:
@@ -339,16 +423,23 @@ def test_list_essential_works_by_composer_id(openopys_constructor, composer_id, 
     assert_expectations()
 
 
-@pytest.mark.parametrize('openopys_constructor, composer_id, title_search, genre, response_schema', [
-    (default_openopys, '178', 'Dard', Genre.STAGE, work_list_schema),
-    (custom_url_openopys, '178', 'Hip', Genre.STAGE, work_list_schema),
-    (default_openopys, '10', 'De', Genre.VOCAL, work_list_schema),
-    (default_openopys, '204', 'Viol', Genre.CHAMBER, work_list_schema),
-    (default_openopys, '-1', '', Genre.POPULAR, work_list_schema),
+@pytest.mark.parametrize('openopys_constructor, composer_id, title_search, genre, response_schema, min_num_results, max_num_results', [
+    (default_openopys, '178', 'Dard', Genre.STAGE, work_list_schema, 1, 1),
+    (custom_url_openopys, '178', 'Hip', Genre.STAGE, work_list_schema, 1, 1),
+    (default_openopys, '10', 'De', Genre.VOCAL, work_list_schema, 1, None),
+    (default_openopys, '204', 'Viol', Genre.CHAMBER, work_list_schema, 1, None),
+    (default_openopys, '-1', '', Genre.POPULAR, work_list_schema, 0, 0),
 ])
-def test_search_works_by_composer_id_title_and_genre(openopys_constructor, composer_id, title_search, genre, response_schema):
+def test_search_works_by_composer_id_title_and_genre(openopys_constructor, composer_id, title_search, genre, response_schema, min_num_results, max_num_results):
     openopys = openopys_constructor()
-    result = openopys.search_works_by_composer_id_title_and_genre(composer_id, title_search, genre)
+    result = openopys.search_works_by_composer_id_title_and_genre(
+        composer_id, title_search, genre)
+
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
     _validate_result_with_schema(result, response_schema)
     # Also check that every result is popular
     for item in result:
@@ -356,4 +447,26 @@ def test_search_works_by_composer_id_title_and_genre(openopys_constructor, compo
             item['genre'] == genre.value,
             f"'{item['title']}' has genre='{item['genre']}' not expected_genre={genre.value}"
         )
+    assert_expectations()
+
+
+@pytest.mark.parametrize('openopys_constructor, composer_id, title_search, response_schema, min_num_results, max_num_results', [
+    (default_openopys, '178', 'Dard', work_list_schema, 1, 1),
+    (custom_url_openopys, '178', 'Hip', work_list_schema, 1, 1),
+    (default_openopys, '10', 'De', work_list_schema, 1, None),
+    (default_openopys, '204', 'Viol', work_list_schema, 1, None),
+    (default_openopys, '-1', '', work_list_schema, 0, 0),
+])
+def test_search_works_by_composer_id_and_title(openopys_constructor, composer_id, title_search, response_schema, min_num_results, max_num_results):
+    openopys = openopys_constructor()
+    result = openopys.search_works_by_composer_id_and_title(
+        composer_id, title_search)
+
+    expect(
+        _result_size_in_range(len(result), min_num_results, max_num_results),
+        f"Did not return expected number of results (min={min_num_results}, max={max_num_results})."
+        + f"Got {len(result)} results.")
+
+    _validate_result_with_schema(result, response_schema)
+    
     assert_expectations()
