@@ -91,20 +91,28 @@ class OpenOpys(Session):
         joined_items = self._join_items(items)
         target = _urljoin(
             self.api_url, self.content_base_urls[Content.COMPOSERS], 'list', list_by, joined_items) + '.json'
-        return self.get_json(target).get('composers', [])
+        return self.get_json(target).get(Content.COMPOSERS.value, [])
 
     def _list_works(self, list_by='', items=[]):
         joined_items = self._join_items(items)
         target = _urljoin(
             self.api_url, self.content_base_urls[Content.WORKS], 'list', list_by, joined_items) + '.json'
-        return self.get_json(target).get('works', [])
+        return self.get_json(target).get(Content.WORKS.value, [])
 
     def _list_genres(self, list_by='', items=[]):
         joined_items = self._join_items(items)
         target = _urljoin(
             self.api_url, self.content_base_urls[Content.GENRES], 'list', list_by, joined_items) + '.json'
-        return self.get_json(target).get('genres', [])
+        return self.get_json(target).get(Content.GENRES, [])
 
+    def _list_work_details(self, list_by='', items=[]):
+        joined_items = self._join_items(items)
+        target = _urljoin(
+            self.api_url, self.content_base_urls[Content.WORKS], 'list', list_by, joined_items) + '.json'
+        response_json = self.get_json(target)
+        return {'composer': response_json.get('composer', {}), 'work': response_json.get('work', {})}
+
+    
     def list_popular_composers(self):
         items = ['pop']
         return self._list_composers(items=items)
@@ -163,3 +171,5 @@ class OpenOpys(Session):
 
     def search_works_by_composer_id_and_title(self, composer_id, title):
         return self.search_works_by_composer_id_title_and_genre(composer_id, title, Genre.ALL)
+
+

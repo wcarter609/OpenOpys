@@ -34,7 +34,7 @@ opys_custom = OpenOpys(api_url="https://custom.url")
 
 ```
 
-Using the OpenOpys object, one can perform a number of queries:
+Using the OpenOpys object, one can perform a number of queries. E.g.:
 ```python
 opys.list_popular_composers() # List popular compsoers according to openopus database
 [{'id': '87',

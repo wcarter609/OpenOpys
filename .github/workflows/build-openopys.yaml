@@ -17,7 +17,7 @@ jobs:
         run: pip install pytest-github-actions-annotate-failures
       
       - name: Calculate coverage and store report
-        run: pytest --cov=src --cov-report=xml test_openopys.py
+        run: pytest --exitfirst --failed-first --cov=src --cov-report=xml test_openopys.py
 
       - uses: codecov/codecov-action@v1
         with:
