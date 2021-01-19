@@ -1,5 +1,6 @@
 # OpenOpys
-![Coverage](https://img.shields.io/badge/coverage-96%25-yellowgreen)
+![build-openopys](https://github.com/wcarter609/OpenOpys/workflows/build-openopys/badge.svg?branch=master&event=push)
+![Coverage](https://img.shields.io/codecov/c/gh/wcarter609/OpenOpys)
 ![Last Commit](https://img.shields.io/github/last-commit/wcarter609/OpenOpys)
 
 A basic Python wrapper for the [OpenOpus API project](https://openopus.org/) (with which I am unaffiliated). For a detailed description of OpenOpus, definitely check
