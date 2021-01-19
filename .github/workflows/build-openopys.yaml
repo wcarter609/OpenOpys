@@ -5,17 +5,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: codecov/codecov-action@v1
+        with:
+          files: ./coverage.xml
+          name: codecov-openopys
+
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
           architecture: 'x64'
-          
+
       - name: Install testing packages
         run: pip install -r test_requirements.txt
 
       - name: Add plugin to annotate failures
         run: pip install pytest-github-actions-annotate-failures
       
-      - name: Calculate coverage
-        run: pytest --cov=src test_openopys.py
+      - name: Calculate coverage and store report
+        run: pytest --cov=src --cov-report=xml test_openopys.py
 
