@@ -433,8 +433,8 @@ def test_list_essential_works_by_composer_id(openopys_constructor, composer_id, 
 
 @pytest.mark.parametrize('openopys_constructor, composer_id, title_search, genre, response_schema, min_num_results, max_num_results', [
     (default_openopys, '178', 'Dard', Genre.STAGE, work_list_schema, 1, 1),
-    # (custom_url_openopys, '178', 'Hip', Genre.STAGE, work_list_schema, 1, 1), # Disable until search issues resolved by openopus api
-    (default_openopys, '10', 'De', Genre.VOCAL, work_list_schema, 1, None),
+    (custom_url_openopys, '178', 'Hipp', Genre.STAGE, work_list_schema, 1, 1), # Disable until search issues resolved by openopus api
+    (default_openopys, '10', 'Deum', Genre.VOCAL, work_list_schema, 1, None),
     (default_openopys, '204', 'Viol', Genre.CHAMBER, work_list_schema, 1, None),
     (default_openopys, '-1', '', Genre.POPULAR, work_list_schema, 0, 0),
 ])
@@ -461,8 +461,8 @@ def test_search_works_by_composer_id_title_and_genre(openopys_constructor, compo
 @pytest.mark.parametrize('openopys_constructor, composer_id, title_search, response_schema, min_num_results, max_num_results', [
     # (default_openopys, '178', 'Dard', work_list_schema, 1, 1), # Disable until search issues resolved by openopus api
     # (custom_url_openopys, '178', 'Hip', work_list_schema, 1, 1), # Disable until search issues resolved by openopus api
-    (custom_url_openopys, '178', 'Hip', work_list_schema, 1, 1),
-    (default_openopys, '10', 'De', work_list_schema, 1, None),
+    (custom_url_openopys, '178', 'Hipp', work_list_schema, 1, 1),
+    (default_openopys, '10', 'Deum', work_list_schema, 1, None),
     (default_openopys, '204', 'Viol', work_list_schema, 1, None),
     (default_openopys, '-1', '', work_list_schema, 0, 0),
 ])
