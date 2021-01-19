@@ -5,11 +5,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: codecov/codecov-action@v1
-        with:
-          files: ./coverage.xml
-          name: codecov-openopys
-
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
@@ -24,3 +19,7 @@ jobs:
       - name: Calculate coverage and store report
         run: pytest --cov=src --cov-report=xml test_openopys.py
 
+      - uses: codecov/codecov-action@v1
+        with:
+          files: ./coverage.xml
+          name: codecov-openopys
