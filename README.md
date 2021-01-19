@@ -1,4 +1,5 @@
 # OpenOpys
+![build-openopys](https://github.com/wcarter609/OpenOpys/workflows/build-openopys/badge.svg?branch=master&event=push)
 ![Coverage](https://img.shields.io/badge/coverage-96%25-yellowgreen)
 ![Last Commit](https://img.shields.io/github/last-commit/wcarter609/OpenOpys)
 
