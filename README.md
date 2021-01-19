@@ -14,6 +14,8 @@ out their site using the previous link or [their github repo](https://github.com
 
 The main goal of this wrapper is simply to reduce necessary boilerplate code to query and process OpenOpus data in Python applications.
 
+@TODO: Continue wrapping endpoints around getting work details and performer information.
+
 ## Usage
 Below is the recommended way to import the openopys module. This loads the `openopys.OpenOpys` class which handles API calls/responses as well as a
 helper `openopys.Genre` class which is used to search by genre.
@@ -102,3 +104,5 @@ opys.search_works_by_composer_id_title_and_genre('10', '', Genre.STAGE) # Get a 
   ...
 
 ```
+## Wrapped Endpoints
+forthcoming
